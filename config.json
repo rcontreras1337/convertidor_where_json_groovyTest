@@ -1,0 +1,17 @@
+{
+    "campos": [
+        {
+            "nombre": "variable1",
+            "tipo": "int"
+        },
+        {
+            "nombre": "variable2",
+            "tipo": "string"
+        },
+        {
+            "nombre": "variable3",
+            "tipo": "string"
+        }
+    ]
+}
+

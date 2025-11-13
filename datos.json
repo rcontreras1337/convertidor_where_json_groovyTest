@@ -1,0 +1,33 @@
+[
+    {
+        "variable1": "000123",
+        "variable2": "hola",
+        "variable3": "mundo"
+    },
+    {
+        "variable1": "00042",
+        "variable2": "test",
+        "variable3": "data"
+    },
+    {
+        "variable1": "000123",
+        "variable2": "hola",
+        "variable3": "mundo"
+    },
+    {
+        "variable1": "100",
+        "variable2": "ejemplo",
+        "variable3": "prueba"
+    },
+    {
+        "variable1": "0000001",
+        "variable2": "foo",
+        "variable3": "bar"
+    },
+    {
+        "variable1": "00042",
+        "variable2": "test",
+        "variable3": "data"
+    }
+]
+
