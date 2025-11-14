@@ -7,15 +7,65 @@ const readline = require('readline');
  * Lee datos de un JSON, elimina duplicados y genera strings formateados
  */
 
-// Función para leer archivos JSON
+// Función para leer y parsear archivos JSON
 function leerJSON(nombreArchivo) {
     try {
         const contenido = fs.readFileSync(nombreArchivo, 'utf-8');
         return JSON.parse(contenido);
     } catch (error) {
-        console.error(`❌ Error al leer ${nombreArchivo}:`, error.message);
-        process.exit(1);
+        throw new Error(`Error al parsear JSON: ${error.message}`);
     }
+}
+
+// Función para validar estructura del archivo de datos
+function validarDatosJSON(datos) {
+    // Debe ser un objeto o un array
+    if (typeof datos !== 'object' || datos === null) {
+        return { valido: false, mensaje: 'El archivo debe contener un objeto JSON o un array' };
+    }
+    
+    // Si es array, verificar que no esté vacío
+    if (Array.isArray(datos) && datos.length === 0) {
+        return { valido: false, mensaje: 'El array de datos está vacío' };
+    }
+    
+    return { valido: true };
+}
+
+// Función para validar estructura del archivo de configuración
+function validarConfigJSON(config) {
+    // Debe ser un objeto
+    if (typeof config !== 'object' || config === null || Array.isArray(config)) {
+        return { valido: false, mensaje: 'El archivo de configuración debe ser un objeto JSON' };
+    }
+    
+    // Debe tener el campo "campos"
+    if (!config.campos) {
+        return { valido: false, mensaje: 'El archivo de configuración debe tener un campo "campos"' };
+    }
+    
+    // El campo "campos" debe ser un array
+    if (!Array.isArray(config.campos)) {
+        return { valido: false, mensaje: 'El campo "campos" debe ser un array' };
+    }
+    
+    // El array "campos" no debe estar vacío
+    if (config.campos.length === 0) {
+        return { valido: false, mensaje: 'El array "campos" no puede estar vacío' };
+    }
+    
+    // Validar que cada campo tenga "nombre" y "tipo"
+    for (let i = 0; i < config.campos.length; i++) {
+        const campo = config.campos[i];
+        if (!campo.nombre || !campo.tipo) {
+            return { 
+                valido: false, 
+                mensaje: `El campo en posición ${i} debe tener propiedades "nombre" y "tipo"` 
+            };
+        }
+    }
+    
+    return { valido: true };
 }
 
 // Función para generar nombre de archivo con timestamp
@@ -31,8 +81,8 @@ function generarNombreAutomatico() {
     return `output_${año}${mes}${dia}_${hora}${minuto}${segundo}.txt`;
 }
 
-// Función para preguntar por la ruta de un archivo JSON
-function preguntarRutaJSON(nombreDefault, tipoArchivo) {
+// Función para preguntar por la ruta de un archivo JSON con validación
+function preguntarRutaJSON(nombreDefault, tipoArchivo, validarFn) {
     return new Promise((resolve) => {
         const pregunta = () => {
             const rl = readline.createInterface({
@@ -44,21 +94,40 @@ function preguntarRutaJSON(nombreDefault, tipoArchivo) {
                 rl.close();
                 
                 // Si el usuario no escribe nada, usar archivo por defecto
-                if (!respuesta || respuesta.trim() === '') {
-                    console.log(`   ✓ Usando archivo por defecto: ${nombreDefault}\n`);
-                    resolve(nombreDefault);
-                } else {
-                    const rutaIngresada = respuesta.trim();
+                const rutaArchivo = (!respuesta || respuesta.trim() === '') ? nombreDefault : respuesta.trim();
+                
+                // Verificar si el archivo existe
+                if (!fs.existsSync(rutaArchivo)) {
+                    console.log(`   ❌ Error: El archivo '${rutaArchivo}' no existe\n`);
+                    pregunta();
+                    return;
+                }
+                
+                // Intentar leer y validar el JSON
+                try {
+                    const datos = leerJSON(rutaArchivo);
                     
-                    // Verificar si el archivo existe
-                    if (fs.existsSync(rutaIngresada)) {
-                        console.log(`   ✓ Usando archivo: ${rutaIngresada}\n`);
-                        resolve(rutaIngresada);
-                    } else {
-                        console.log(`   ❌ Error: El archivo '${rutaIngresada}' no existe\n`);
-                        // Volver a preguntar recursivamente
-                        pregunta();
+                    // Validar estructura si se proporciona función de validación
+                    if (validarFn) {
+                        const resultado = validarFn(datos);
+                        if (!resultado.valido) {
+                            console.log(`   ❌ Error de validación: ${resultado.mensaje}\n`);
+                            pregunta();
+                            return;
+                        }
                     }
+                    
+                    // Si llegamos aquí, todo está bien
+                    if (rutaArchivo === nombreDefault) {
+                        console.log(`   ✓ Usando archivo por defecto: ${nombreDefault}\n`);
+                    } else {
+                        console.log(`   ✓ Usando archivo: ${rutaArchivo}\n`);
+                    }
+                    resolve(rutaArchivo);
+                    
+                } catch (error) {
+                    console.log(`   ❌ Error: ${error.message}\n`);
+                    pregunta();
                 }
             });
         };
@@ -182,11 +251,11 @@ function generarLineas(datos, config) {
 async function main() {
     console.log('🚀 Iniciando generador de datos de prueba...\n');
 
-    // 1. Preguntar por el archivo de datos JSON
-    const rutaDatos = await preguntarRutaJSON('datos.json', 'de datos JSON');
+    // 1. Preguntar por el archivo de datos JSON (con validación)
+    const rutaDatos = await preguntarRutaJSON('datos.json', 'de datos JSON', validarDatosJSON);
 
-    // 2. Preguntar por el archivo de configuración JSON
-    const rutaConfig = await preguntarRutaJSON('config.json', 'de configuración JSON');
+    // 2. Preguntar por el archivo de configuración JSON (con validación)
+    const rutaConfig = await preguntarRutaJSON('config.json', 'de configuración JSON', validarConfigJSON);
 
     // 3. Preguntar nombre del archivo de salida
     const nombreArchivo = await preguntarNombreArchivo();

@@ -45,8 +45,10 @@ El generador te permite especificar rutas personalizadas para tus archivos JSON 
   - Archivo en mismo directorio: `usuarios.json`
 
 **Validación:**
-- ✅ Si el archivo existe → Continúa
-- ❌ Si el archivo NO existe → Vuelve a preguntar (sin límite de intentos)
+- ✅ **Existencia**: Verifica que el archivo exista
+- ✅ **Formato JSON**: Valida que sea un JSON sintácticamente correcto
+- ✅ **Estructura**: Verifica que sea un objeto o array válido
+- ❌ Si falla cualquier validación → Muestra el error y vuelve a preguntar (sin límite de intentos)
 - 💡 Puedes presionar Enter en cualquier momento para usar el archivo por defecto
 
 ### Pregunta 2: Archivo de Configuración JSON
@@ -55,17 +57,35 @@ El generador te permite especificar rutas personalizadas para tus archivos JSON 
 📂 ¿Ruta del archivo de configuración JSON? (Enter para 'config.json'): _
 ```
 
-Funciona igual que la pregunta anterior, pero para el archivo de configuración.
+**Validación:**
+- ✅ **Existencia**: Verifica que el archivo exista
+- ✅ **Formato JSON**: Valida que sea un JSON sintácticamente correcto
+- ✅ **Estructura obligatoria**: Debe tener un campo `campos` que sea un array no vacío
+- ✅ **Campos completos**: Cada elemento en `campos` debe tener propiedades `nombre` y `tipo`
+- ❌ Si falla cualquier validación → Muestra el error específico y vuelve a preguntar
 
 ### Ejemplo con Errores y Recuperación:
 
+**Escenario 1: Archivo no existe**
 ```bash
 📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): mi_archivo.json
    ❌ Error: El archivo 'mi_archivo.json' no existe
+```
 
-📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): /ruta/incorrecta.json
-   ❌ Error: El archivo '/ruta/incorrecta.json' no existe
+**Escenario 2: JSON inválido (sintaxis incorrecta)**
+```bash
+📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): query.json
+   ❌ Error: Error al parsear JSON: Unexpected token S in JSON at position 0
+```
 
+**Escenario 3: Config sin estructura correcta**
+```bash
+📂 ¿Ruta del archivo de configuración JSON? (Enter para 'config.json'): mi_config.json
+   ❌ Error de validación: El archivo de configuración debe tener un campo "campos"
+```
+
+**Escenario 4: Todo correcto**
+```bash
 📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): usuarios.json
    ✓ Usando archivo: usuarios.json
 ```
@@ -206,7 +226,12 @@ def "test con datos generados"() {
 
 ✅ **Genera cabecera automáticamente** con nombres de campos desde config.json
 ✅ **Selección flexible de archivos de entrada** (rutas personalizadas o defaults)
-✅ **Validación automática de existencia de archivos** con reintentos ilimitados
+✅ **Validación robusta de JSON**:
+   - Verifica existencia del archivo
+   - Valida sintaxis JSON correcta
+   - Valida estructura de datos (objeto/array)
+   - Valida estructura de config (campos requeridos)
+   - Reintentos ilimitados con mensajes de error claros
 ✅ Elimina automáticamente datos duplicados
 ✅ Configura el orden de los campos
 ✅ Define tipos (int, string, boolean)
@@ -236,6 +261,40 @@ Cuando defines un campo con tipo `int`, el generador automáticamente parsea el 
 - ✅ Formato correcto para números en Groovy
 - 📖 Tests más legibles
 - 🎯 Comportamiento correcto según el tipo de dato
+
+## 🛡️ Validaciones y Errores Comunes
+
+El generador realiza múltiples validaciones para evitar errores:
+
+### Errores de Archivo de Datos
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| `El archivo no existe` | Ruta incorrecta | Verifica la ruta o presiona Enter para usar default |
+| `Error al parsear JSON` | JSON inválido (sintaxis) | Verifica que el archivo tenga sintaxis JSON válida |
+| `Debe contener un objeto o array` | Contenido no es JSON | Asegúrate de que sea un objeto `{}` o array `[]` |
+| `El array está vacío` | Array sin datos | Agrega al menos un elemento al array |
+
+### Errores de Archivo de Configuración
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| `Debe ser un objeto JSON` | Config no es un objeto | Usa `{ "campos": [...] }` |
+| `Debe tener un campo "campos"` | Falta propiedad "campos" | Agrega `"campos": [...]` al JSON |
+| `"campos" debe ser un array` | Campos no es array | Usa `"campos": [...]` no `"campos": "..."` |
+| `El array "campos" no puede estar vacío` | Sin campos definidos | Agrega al menos un campo |
+| `Debe tener propiedades "nombre" y "tipo"` | Campo incompleto | Cada campo debe tener `{"nombre": "...", "tipo": "..."}` |
+
+### Ejemplo de Config Válido
+
+```json
+{
+  "campos": [
+    {"nombre": "id", "tipo": "int"},
+    {"nombre": "nombre", "tipo": "string"}
+  ]
+}
+```
 
 ## 🔧 Personalización
 

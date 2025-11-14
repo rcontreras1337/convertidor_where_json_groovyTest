@@ -100,6 +100,8 @@ Cabecera: variable1 | variable2 | variable3 || resultado
 
 ## Escenario 3: Manejo de Errores y Recuperación
 
+### A. Errores de existencia y validación de JSON
+
 ```bash
 $ node generador.js
 
@@ -108,11 +110,17 @@ $ node generador.js
 📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): archivo_inexistente.json
    ❌ Error: El archivo 'archivo_inexistente.json' no existe
 
-📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): C:\ruta\incorrecta\datos.json
-   ❌ Error: El archivo 'C:\ruta\incorrecta\datos.json' no existe
+📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): query.sql
+   ❌ Error: Error al parsear JSON: Unexpected token S in JSON at position 0
 
 📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): [Enter]
    ✓ Usando archivo por defecto: datos.json
+
+📂 ¿Ruta del archivo de configuración JSON? (Enter para 'config.json'): config_malo.json
+   ❌ Error de validación: El archivo de configuración debe tener un campo "campos"
+
+📂 ¿Ruta del archivo de configuración JSON? (Enter para 'config.json'): [Enter]
+   ✓ Usando archivo por defecto: config.json
 
 📂 ¿Ruta del archivo de configuración JSON? (Enter para 'config.json'): [Enter]
    ✓ Usando archivo por defecto: config.json
@@ -243,16 +251,23 @@ class MiTest extends Specification {
    - Presiona Enter 3 veces para usar todos los defaults
    - Ideal cuando estás probando configuraciones rápidamente
 
-5. **Manejo de errores:**
+5. **Validación automática:**
+   - El generador valida la sintaxis JSON automáticamente
+   - Si el archivo tiene errores, te lo dice y puedes intentar con otro
+   - Valida que el config.json tenga la estructura correcta
+   - Mensajes de error claros te guían para corregir el problema
+
+6. **Manejo de errores:**
    - Si te equivocas en la ruta, el programa pregunta de nuevo
+   - Si el JSON es inválido, puedes intentar con otro archivo
    - Siempre puedes presionar Enter para usar el archivo por defecto
    - No hay límite de reintentos
 
-6. **Archivos en la misma carpeta:**
+7. **Archivos en la misma carpeta:**
    - Si tus archivos están en el directorio actual, solo escribe el nombre
    - Ejemplo: `usuarios.json` en vez de `./usuarios.json`
 
-7. **Versión en Git:** 
+8. **Versión en Git:** 
    - El `.gitignore` ya está configurado para ignorar `output_*.txt`
    - Tus archivos generados automáticamente no se versionarán
 
