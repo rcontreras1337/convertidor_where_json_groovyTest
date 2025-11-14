@@ -11,24 +11,68 @@ Este proyecto genera datos formateados para usar en tests de Groovy/Spock despu�
 
 ## 🚀 Uso Rápido
 
-1. **Edita tus archivos de configuración:**
-   - `datos.json` - Tus datos de entrada
-   - `config.json` - Configuración de campos
+1. **Prepara tus archivos:**
+   - Archivo JSON con datos de entrada
+   - Archivo JSON con configuración de campos
 
 2. **Ejecuta el generador:**
    ```bash
    node generador.js
    ```
 
-3. **Ingresa el nombre del archivo cuando se te pregunte:**
-   - Escribe un nombre (ej: `mis_datos`) y presiona Enter
-   - O simplemente presiona Enter para usar nombre automático con timestamp
+3. **Responde las preguntas interactivas:**
+   - **Ruta del archivo de datos JSON** (Enter para `datos.json`)
+   - **Ruta del archivo de configuración JSON** (Enter para `config.json`)
+   - **Nombre del archivo de salida** (Enter para nombre automático con timestamp)
 
 4. **El resultado se muestra en consola y se guarda en el archivo indicado**
 
+## 📂 Selección de Archivos de Entrada
+
+El generador te permite especificar rutas personalizadas para tus archivos JSON o usar los valores por defecto.
+
+### Pregunta 1: Archivo de Datos JSON
+
+```bash
+📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): _
+```
+
+**Opciones:**
+- **Presiona Enter**: Usa `datos.json` (archivo por defecto en el directorio actual)
+- **Escribe una ruta**: Usa el archivo que especifiques
+  - Ruta relativa: `mis_datos/usuarios.json`
+  - Ruta absoluta: `C:\datos\usuarios.json`
+  - Archivo en mismo directorio: `usuarios.json`
+
+**Validación:**
+- ✅ Si el archivo existe → Continúa
+- ❌ Si el archivo NO existe → Vuelve a preguntar (sin límite de intentos)
+- 💡 Puedes presionar Enter en cualquier momento para usar el archivo por defecto
+
+### Pregunta 2: Archivo de Configuración JSON
+
+```bash
+📂 ¿Ruta del archivo de configuración JSON? (Enter para 'config.json'): _
+```
+
+Funciona igual que la pregunta anterior, pero para el archivo de configuración.
+
+### Ejemplo con Errores y Recuperación:
+
+```bash
+📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): mi_archivo.json
+   ❌ Error: El archivo 'mi_archivo.json' no existe
+
+📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): /ruta/incorrecta.json
+   ❌ Error: El archivo '/ruta/incorrecta.json' no existe
+
+📂 ¿Ruta del archivo de datos JSON? (Enter para 'datos.json'): usuarios.json
+   ✓ Usando archivo: usuarios.json
+```
+
 ## 📝 Nombre del Archivo de Salida
 
-Al ejecutar el generador, se te preguntará por el nombre del archivo:
+Al final, se te preguntará por el nombre del archivo de salida:
 
 ```bash
 🚀 Iniciando generador de datos de prueba...
@@ -154,12 +198,15 @@ def "test con datos generados"() {
 
 ## ⚙️ Características
 
+✅ **Selección flexible de archivos de entrada** (rutas personalizadas o defaults)
+✅ **Validación automática de existencia de archivos** con reintentos ilimitados
 ✅ Elimina automáticamente datos duplicados
 ✅ Configura el orden de los campos
 ✅ Define tipos (int, string, boolean)
 ✅ **Parsea automáticamente enteros y elimina ceros a la izquierda**
-✅ **Nombre de archivo personalizado o automático con timestamp**
+✅ **Nombre de archivo de salida personalizado o automático con timestamp**
 ✅ No sobrescribe archivos anteriores (con modo automático)
+✅ Soporta rutas relativas y absolutas
 ✅ Genera formato listo para Spock/Groovy
 ✅ Muestra resultado en consola y archivo
 ✅ Compatible con Windows, Mac y Linux
