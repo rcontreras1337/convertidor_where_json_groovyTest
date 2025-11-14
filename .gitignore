@@ -1,0 +1,29 @@
+# Archivos de salida generados automáticamente
+output_*.txt
+*.txt
+
+# Excepciones: mantener archivos de documentación
+!README.md
+!EJEMPLO_USO.md
+
+# Node modules (si llegaras a instalar dependencias)
+node_modules/
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos temporales
+tmp/
+temp/
+

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 
 /**
  * Generador de datos de prueba para Groovy/Spock
@@ -15,6 +16,48 @@ function leerJSON(nombreArchivo) {
         console.error(`❌ Error al leer ${nombreArchivo}:`, error.message);
         process.exit(1);
     }
+}
+
+// Función para generar nombre de archivo con timestamp
+function generarNombreAutomatico() {
+    const ahora = new Date();
+    const año = ahora.getFullYear();
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const dia = String(ahora.getDate()).padStart(2, '0');
+    const hora = String(ahora.getHours()).padStart(2, '0');
+    const minuto = String(ahora.getMinutes()).padStart(2, '0');
+    const segundo = String(ahora.getSeconds()).padStart(2, '0');
+    
+    return `output_${año}${mes}${dia}_${hora}${minuto}${segundo}.txt`;
+}
+
+// Función para preguntar al usuario el nombre del archivo
+function preguntarNombreArchivo() {
+    return new Promise((resolve) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+
+        rl.question('📝 ¿Nombre del archivo de salida? (presiona Enter para usar nombre automático): ', (respuesta) => {
+            rl.close();
+            
+            // Si el usuario no escribe nada, usar nombre automático
+            if (!respuesta || respuesta.trim() === '') {
+                const nombreAutomatico = generarNombreAutomatico();
+                console.log(`   ✓ Usando nombre automático: ${nombreAutomatico}\n`);
+                resolve(nombreAutomatico);
+            } else {
+                // Agregar .txt si no tiene extensión
+                let nombreFinal = respuesta.trim();
+                if (!nombreFinal.endsWith('.txt')) {
+                    nombreFinal += '.txt';
+                }
+                console.log(`   ✓ Usando nombre: ${nombreFinal}\n`);
+                resolve(nombreFinal);
+            }
+        });
+    });
 }
 
 // Función para eliminar duplicados
@@ -94,10 +137,13 @@ function generarLineas(datos, config) {
 }
 
 // Función principal
-function main() {
+async function main() {
     console.log('🚀 Iniciando generador de datos de prueba...\n');
 
-    // 1. Leer datos de entrada
+    // 1. Preguntar nombre del archivo
+    const nombreArchivo = await preguntarNombreArchivo();
+
+    // 2. Leer datos de entrada
     console.log('📖 Leyendo datos.json...');
     let datos = leerJSON('datos.json');
     
@@ -108,7 +154,7 @@ function main() {
     }
     console.log(`   ✓ ${datos.length} registro(s) encontrado(s)\n`);
 
-    // 2. Eliminar duplicados
+    // 3. Eliminar duplicados
     console.log('🧹 Eliminando duplicados...');
     const datosOriginales = datos.length;
     datos = eliminarDuplicados(datos);
@@ -116,17 +162,17 @@ function main() {
     console.log(`   ✓ ${duplicadosEliminados} duplicado(s) eliminado(s)`);
     console.log(`   ✓ ${datos.length} registro(s) único(s)\n`);
 
-    // 3. Leer configuración
+    // 4. Leer configuración
     console.log('⚙️  Leyendo config.json...');
     const config = leerJSON('config.json');
     console.log(`   ✓ ${config.campos.length} campo(s) configurado(s)\n`);
 
-    // 4. Generar líneas formateadas
+    // 5. Generar líneas formateadas
     console.log('🔧 Generando líneas formateadas...');
     const lineas = generarLineas(datos, config);
     console.log(`   ✓ ${lineas.length} línea(s) generada(s)\n`);
 
-    // 5. Mostrar en consola
+    // 6. Mostrar en consola
     console.log('📋 Resultado:\n');
     console.log('─'.repeat(80));
     lineas.forEach((linea, index) => {
@@ -135,8 +181,7 @@ function main() {
     console.log('─'.repeat(80));
     console.log();
 
-    // 6. Guardar en archivo
-    const nombreArchivo = 'output.txt';
+    // 7. Guardar en archivo
     const contenido = lineas.join('\n');
     fs.writeFileSync(nombreArchivo, contenido, 'utf-8');
     console.log(`✅ Archivo generado: ${nombreArchivo}\n`);

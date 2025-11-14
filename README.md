@@ -2,6 +2,8 @@
 
 Este proyecto genera datos formateados para usar en tests de Groovy/Spock después de la cláusula `where:`.
 
+> 📖 **¿Primera vez usando el generador?** Lee [EJEMPLO_USO.md](EJEMPLO_USO.md) para ver ejemplos completos paso a paso.
+
 ## 📋 Requisitos
 
 - Node.js (versión 12 o superior)
@@ -18,8 +20,50 @@ Este proyecto genera datos formateados para usar en tests de Groovy/Spock despu�
    node generador.js
    ```
 
-3. **El resultado se muestra en consola y se guarda en:**
-   - `output.txt`
+3. **Ingresa el nombre del archivo cuando se te pregunte:**
+   - Escribe un nombre (ej: `mis_datos`) y presiona Enter
+   - O simplemente presiona Enter para usar nombre automático con timestamp
+
+4. **El resultado se muestra en consola y se guarda en el archivo indicado**
+
+## 📝 Nombre del Archivo de Salida
+
+Al ejecutar el generador, se te preguntará por el nombre del archivo:
+
+```bash
+🚀 Iniciando generador de datos de prueba...
+
+📝 ¿Nombre del archivo de salida? (presiona Enter para usar nombre automático): _
+```
+
+### Opción 1: Nombre Personalizado
+
+Escribe el nombre que quieras:
+
+```bash
+📝 ¿Nombre del archivo de salida? (presiona Enter para usar nombre automático): test_usuarios
+   ✓ Usando nombre: test_usuarios.txt
+```
+
+**Nota:** Si no agregas `.txt`, se añade automáticamente.
+
+### Opción 2: Nombre Automático (Timestamp)
+
+Simplemente presiona **Enter** sin escribir nada:
+
+```bash
+📝 ¿Nombre del archivo de salida? (presiona Enter para usar nombre automático): 
+   ✓ Usando nombre automático: output_20251113_143025.txt
+```
+
+**Formato del timestamp:** `output_YYYYMMDD_HHMMSS.txt`
+- `YYYYMMDD` = Año, Mes, Día
+- `HHMMSS` = Hora, Minuto, Segundo
+
+**Ventajas:**
+- ✅ No sobrescribe archivos anteriores
+- ✅ Mantiene un historial de salidas
+- ✅ Fácil identificar cuándo se generó cada archivo
 
 ## 📁 Estructura de Archivos
 
@@ -114,6 +158,8 @@ def "test con datos generados"() {
 ✅ Configura el orden de los campos
 ✅ Define tipos (int, string, boolean)
 ✅ **Parsea automáticamente enteros y elimina ceros a la izquierda**
+✅ **Nombre de archivo personalizado o automático con timestamp**
+✅ No sobrescribe archivos anteriores (con modo automático)
 ✅ Genera formato listo para Spock/Groovy
 ✅ Muestra resultado en consola y archivo
 ✅ Compatible con Windows, Mac y Linux
@@ -139,26 +185,26 @@ Cuando defines un campo con tipo `int`, el generador automáticamente parsea el 
 
 ## 🔧 Personalización
 
-### Cambiar el nombre del archivo de salida
-
-Edita la línea 103 en `generador.js`:
-
-```javascript
-const nombreArchivo = 'mi_archivo.txt'; // Cambia 'output.txt'
-```
-
 ### Usar diferentes archivos de entrada
 
-Puedes modificar las líneas 82-83 para usar diferentes archivos:
+Puedes modificar las líneas correspondientes en `generador.js` para usar diferentes archivos:
 
 ```javascript
 let datos = leerJSON('mis_datos.json');
 const config = leerJSON('mi_config.json');
 ```
 
+### Cambiar formato del nombre automático
+
+Para personalizar el formato del timestamp, edita la función `generarNombreAutomatico()` en `generador.js`:
+
+```javascript
+return `mi_prefix_${año}${mes}${dia}_${hora}${minuto}${segundo}.txt`;
+```
+
 ### Formato personalizado del resultado
 
-Por defecto, siempre se agrega ` || "resultado"` al final. Para cambiar esto, edita la línea 67:
+Por defecto, siempre se agrega ` || "resultado"` al final. Para cambiar esto, busca y edita esta línea en `generador.js`:
 
 ```javascript
 const linea = partes.join(' | ') + ' || "mi_resultado"';
