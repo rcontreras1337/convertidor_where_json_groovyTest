@@ -31,7 +31,43 @@ function generarNombreAutomatico() {
     return `output_${año}${mes}${dia}_${hora}${minuto}${segundo}.txt`;
 }
 
-// Función para preguntar al usuario el nombre del archivo
+// Función para preguntar por la ruta de un archivo JSON
+function preguntarRutaJSON(nombreDefault, tipoArchivo) {
+    return new Promise((resolve) => {
+        const pregunta = () => {
+            const rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+
+            rl.question(`📂 ¿Ruta del archivo ${tipoArchivo}? (Enter para '${nombreDefault}'): `, (respuesta) => {
+                rl.close();
+                
+                // Si el usuario no escribe nada, usar archivo por defecto
+                if (!respuesta || respuesta.trim() === '') {
+                    console.log(`   ✓ Usando archivo por defecto: ${nombreDefault}\n`);
+                    resolve(nombreDefault);
+                } else {
+                    const rutaIngresada = respuesta.trim();
+                    
+                    // Verificar si el archivo existe
+                    if (fs.existsSync(rutaIngresada)) {
+                        console.log(`   ✓ Usando archivo: ${rutaIngresada}\n`);
+                        resolve(rutaIngresada);
+                    } else {
+                        console.log(`   ❌ Error: El archivo '${rutaIngresada}' no existe\n`);
+                        // Volver a preguntar recursivamente
+                        pregunta();
+                    }
+                }
+            });
+        };
+        
+        pregunta();
+    });
+}
+
+// Función para preguntar al usuario el nombre del archivo de salida
 function preguntarNombreArchivo() {
     return new Promise((resolve) => {
         const rl = readline.createInterface({
@@ -39,7 +75,7 @@ function preguntarNombreArchivo() {
             output: process.stdout
         });
 
-        rl.question('📝 ¿Nombre del archivo de salida? (presiona Enter para usar nombre automático): ', (respuesta) => {
+        rl.question('📝 ¿Nombre del archivo de salida? (Enter para usar nombre automático): ', (respuesta) => {
             rl.close();
             
             // Si el usuario no escribe nada, usar nombre automático
@@ -140,12 +176,18 @@ function generarLineas(datos, config) {
 async function main() {
     console.log('🚀 Iniciando generador de datos de prueba...\n');
 
-    // 1. Preguntar nombre del archivo
+    // 1. Preguntar por el archivo de datos JSON
+    const rutaDatos = await preguntarRutaJSON('datos.json', 'de datos JSON');
+
+    // 2. Preguntar por el archivo de configuración JSON
+    const rutaConfig = await preguntarRutaJSON('config.json', 'de configuración JSON');
+
+    // 3. Preguntar nombre del archivo de salida
     const nombreArchivo = await preguntarNombreArchivo();
 
-    // 2. Leer datos de entrada
-    console.log('📖 Leyendo datos.json...');
-    let datos = leerJSON('datos.json');
+    // 4. Leer datos de entrada
+    console.log('📖 Leyendo archivo de datos...');
+    let datos = leerJSON(rutaDatos);
     
     // Verificar si datos es un array
     if (!Array.isArray(datos)) {
@@ -154,7 +196,7 @@ async function main() {
     }
     console.log(`   ✓ ${datos.length} registro(s) encontrado(s)\n`);
 
-    // 3. Eliminar duplicados
+    // 5. Eliminar duplicados
     console.log('🧹 Eliminando duplicados...');
     const datosOriginales = datos.length;
     datos = eliminarDuplicados(datos);
@@ -162,17 +204,17 @@ async function main() {
     console.log(`   ✓ ${duplicadosEliminados} duplicado(s) eliminado(s)`);
     console.log(`   ✓ ${datos.length} registro(s) único(s)\n`);
 
-    // 4. Leer configuración
-    console.log('⚙️  Leyendo config.json...');
-    const config = leerJSON('config.json');
+    // 6. Leer configuración
+    console.log('⚙️  Leyendo archivo de configuración...');
+    const config = leerJSON(rutaConfig);
     console.log(`   ✓ ${config.campos.length} campo(s) configurado(s)\n`);
 
-    // 5. Generar líneas formateadas
+    // 7. Generar líneas formateadas
     console.log('🔧 Generando líneas formateadas...');
     const lineas = generarLineas(datos, config);
     console.log(`   ✓ ${lineas.length} línea(s) generada(s)\n`);
 
-    // 6. Mostrar en consola
+    // 8. Mostrar en consola
     console.log('📋 Resultado:\n');
     console.log('─'.repeat(80));
     lineas.forEach((linea, index) => {
@@ -181,7 +223,7 @@ async function main() {
     console.log('─'.repeat(80));
     console.log();
 
-    // 7. Guardar en archivo
+    // 9. Guardar en archivo
     const contenido = lineas.join('\n');
     fs.writeFileSync(nombreArchivo, contenido, 'utf-8');
     console.log(`✅ Archivo generado: ${nombreArchivo}\n`);
