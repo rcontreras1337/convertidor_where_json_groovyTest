@@ -145,6 +145,12 @@ function formatearValor(valor, tipo) {
     }
 }
 
+// Función para generar la línea de cabecera
+function generarCabecera(config) {
+    const nombresCampos = config.campos.map(campo => campo.nombre);
+    return nombresCampos.join(' | ') + ' || resultado';
+}
+
 // Función principal para generar las líneas formateadas
 function generarLineas(datos, config) {
     const lineas = [];
@@ -209,13 +215,16 @@ async function main() {
     const config = leerJSON(rutaConfig);
     console.log(`   ✓ ${config.campos.length} campo(s) configurado(s)\n`);
 
-    // 7. Generar líneas formateadas
+    // 7. Generar cabecera y líneas formateadas
     console.log('🔧 Generando líneas formateadas...');
+    const cabecera = generarCabecera(config);
     const lineas = generarLineas(datos, config);
     console.log(`   ✓ ${lineas.length} línea(s) generada(s)\n`);
 
     // 8. Mostrar en consola
     console.log('📋 Resultado:\n');
+    console.log('─'.repeat(80));
+    console.log(`Cabecera: ${cabecera}`);
     console.log('─'.repeat(80));
     lineas.forEach((linea, index) => {
         console.log(`${index + 1}. ${linea}`);
@@ -223,11 +232,12 @@ async function main() {
     console.log('─'.repeat(80));
     console.log();
 
-    // 9. Guardar en archivo
-    const contenido = lineas.join('\n');
+    // 9. Guardar en archivo con cabecera
+    const contenidoCompleto = [cabecera, ...lineas];
+    const contenido = contenidoCompleto.join('\n');
     fs.writeFileSync(nombreArchivo, contenido, 'utf-8');
     console.log(`✅ Archivo generado: ${nombreArchivo}\n`);
-    console.log(`💾 Total de líneas escritas: ${lineas.length}`);
+    console.log(`💾 Total de líneas escritas: ${contenidoCompleto.length} (1 cabecera + ${lineas.length} datos)`);
 }
 
 // Ejecutar el programa

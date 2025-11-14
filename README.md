@@ -167,16 +167,20 @@ Define qué campos usar, en qué orden y qué tipo tienen:
 
 ### `output.txt` - Salida generada
 
-Ejemplo de salida con parseo de enteros:
+Ejemplo de salida con cabecera y parseo de enteros:
 
 ```
+variable1 | variable2 | variable3 || resultado
 123 | "hola" | "mundo" || "resultado"
 42 | "test" | "data" || "resultado"
 100 | "ejemplo" | "prueba" || "resultado"
 1 | "foo" | "bar" || "resultado"
 ```
 
-**Nota:** Observa cómo `"000123"` se convirtió en `123` (tipo int), mientras que `"hola"` mantiene las comillas (tipo string).
+**Características:**
+- ✅ Primera línea es la **cabecera** con nombres de campos (generada automáticamente desde config.json)
+- ✅ Los valores tipo `int` se parsean: `"000123"` → `123`
+- ✅ Los valores tipo `string` mantienen comillas: `"hola"`
 
 ## 🎯 Ejemplo de Uso en Groovy/Spock
 
@@ -185,10 +189,10 @@ Puedes copiar el contenido de `output.txt` directamente a tu test:
 ```groovy
 def "test con datos generados"() {
     expect:
-    miMetodo(id, nombre, descripcion) == resultado
+    miMetodo(variable1, variable2, variable3) == resultado
     
     where:
-    id | nombre | descripcion || resultado
+    variable1 | variable2 | variable3 || resultado
     123 | "hola" | "mundo" || "resultado"
     42 | "test" | "data" || "resultado"
     100 | "ejemplo" | "prueba" || "resultado"
@@ -196,8 +200,11 @@ def "test con datos generados"() {
 }
 ```
 
+**💡 Nota:** La primera línea del archivo generado **ya es la cabecera** lista para Spock, puedes copiar todo el contenido directamente.
+
 ## ⚙️ Características
 
+✅ **Genera cabecera automáticamente** con nombres de campos desde config.json
 ✅ **Selección flexible de archivos de entrada** (rutas personalizadas o defaults)
 ✅ **Validación automática de existencia de archivos** con reintentos ilimitados
 ✅ Elimina automáticamente datos duplicados
@@ -207,7 +214,7 @@ def "test con datos generados"() {
 ✅ **Nombre de archivo de salida personalizado o automático con timestamp**
 ✅ No sobrescribe archivos anteriores (con modo automático)
 ✅ Soporta rutas relativas y absolutas
-✅ Genera formato listo para Spock/Groovy
+✅ **Formato listo para copiar directo a tests Spock/Groovy**
 ✅ Muestra resultado en consola y archivo
 ✅ Compatible con Windows, Mac y Linux
 

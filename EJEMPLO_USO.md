@@ -32,6 +32,8 @@ $ node generador.js
 📋 Resultado:
 
 ────────────────────────────────────────────────────────────────────────────────
+Cabecera: variable1 | variable2 | variable3 || resultado
+────────────────────────────────────────────────────────────────────────────────
 1. 123 | "hola" | "mundo" || "resultado"
 2. 42 | "test" | "data" || "resultado"
 3. 100 | "ejemplo" | "prueba" || "resultado"
@@ -40,7 +42,7 @@ $ node generador.js
 
 ✅ Archivo generado: test_usuarios.txt
 
-💾 Total de líneas escritas: 4
+💾 Total de líneas escritas: 5 (1 cabecera + 4 datos)
 ```
 
 **Resultado:** Se crea el archivo `test_usuarios.txt` con el contenido.
@@ -79,6 +81,8 @@ $ node generador.js
 📋 Resultado:
 
 ────────────────────────────────────────────────────────────────────────────────
+Cabecera: variable1 | variable2 | variable3 || resultado
+────────────────────────────────────────────────────────────────────────────────
 1. 123 | "hola" | "mundo" || "resultado"
 2. 42 | "test" | "data" || "resultado"
 3. 100 | "ejemplo" | "prueba" || "resultado"
@@ -87,7 +91,7 @@ $ node generador.js
 
 ✅ Archivo generado: output_20251113_143025.txt
 
-💾 Total de líneas escritas: 4
+💾 Total de líneas escritas: 5 (1 cabecera + 4 datos)
 ```
 
 **Resultado:** Se crean archivos usando rutas personalizadas de diferentes carpetas.
@@ -132,6 +136,8 @@ $ node generador.js
 📋 Resultado:
 
 ────────────────────────────────────────────────────────────────────────────────
+Cabecera: variable1 | variable2 | variable3 || resultado
+────────────────────────────────────────────────────────────────────────────────
 1. 123 | "hola" | "mundo" || "resultado"
 2. 42 | "test" | "data" || "resultado"
 3. 100 | "ejemplo" | "prueba" || "resultado"
@@ -140,7 +146,7 @@ $ node generador.js
 
 ✅ Archivo generado: output_20251113_150005.txt
 
-💾 Total de líneas escritas: 4
+💾 Total de líneas escritas: 5 (1 cabecera + 4 datos)
 ```
 
 **Resultado:** Después de varios intentos fallidos, presionar Enter permite usar los valores por defecto y continuar.
@@ -183,15 +189,25 @@ $ node generador.js
 
 Copia el contenido del archivo generado directamente a tu test:
 
+**Contenido del archivo generado:**
+```
+variable1 | variable2 | variable3 || resultado
+123 | "hola" | "mundo" || "resultado"
+42 | "test" | "data" || "resultado"
+100 | "ejemplo" | "prueba" || "resultado"
+1 | "foo" | "bar" || "resultado"
+```
+
+**Test en Groovy/Spock:**
 ```groovy
 class MiTest extends Specification {
     
     def "debe procesar correctamente los datos"() {
         expect:
-        procesarDatos(id, nombre, descripcion) == resultado
+        procesarDatos(variable1, variable2, variable3) == resultado
         
         where:
-        id | nombre | descripcion || resultado
+        variable1 | variable2 | variable3 || resultado
         123 | "hola" | "mundo" || "resultado"
         42 | "test" | "data" || "resultado"
         100 | "ejemplo" | "prueba" || "resultado"
@@ -199,6 +215,8 @@ class MiTest extends Specification {
     }
 }
 ```
+
+**💡 Ventaja:** El archivo ya incluye la cabecera, ¡solo copia y pega todo directamente!
 
 ---
 
